@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using APIService.Database;
+using APIService.Database.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,36 +13,42 @@ namespace APIService.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        DatabaseContext databaseContext;
+
+        public UserController()
+        {
+            databaseContext = new DatabaseContext();
+        }
         // GET: api/User
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<User> Get()
         {
-            return new string[] { "value1", "value2" };
+            return databaseContext.Users.ToList();
         }
 
         // GET: api/User/5
         [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
+        public User Get(int id)
         {
-            return "value";
+            return databaseContext.Users.Find(id);
         }
 
         // POST: api/User
         [HttpPost]
-        public void Post([FromBody] string value)
+        public IActionResult Post([FromBody] User user)
         {
+            try
+            {
+                databaseContext.Users.Add(user);
+                databaseContext.SaveChanges();
+                return StatusCode(StatusCodes.Status201Created, user);
+            }
+            catch (Exception)
+            {
+
+                return StatusCode(StatusCodes.Status500InternalServerError); 
+            }
         }
 
-        // PUT: api/User/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }
